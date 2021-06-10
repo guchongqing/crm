@@ -23,6 +23,17 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	$(function(){
 		//为创建按钮绑定事件，打开添加操作的模态窗口
 		$("#addBtn").click(function () {
+
+			$(".time").datetimepicker({
+				minView: "month",
+				language:  'zh-CN',
+				format: 'yyyy-mm-dd',
+				autoclose: true,
+				todayBtn: true,
+				pickerPosition: "bottom-left"
+			});
+
+
 			/*
 				操作模态窗口的方式
 					需要操作的模态窗口的jqury对象，调用modal方法，为该方法传递参数
@@ -67,12 +78,51 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 					 */
 					//取得当前登录用户的id
+					//在js中使用el表达式，el表达式一定要套用在字符串中
+					var id = "${user.id}";
 
+					$("#create-marketActivityOwner").val(id);
 					//所有的下拉框处理完毕后，展现模态窗口
 					$("#createActivityModal").modal("show");
 
 
 				}
+			})
+
+			//为保存按钮绑定事件，执行添加操作
+			$("#saveBtn").click(function () {
+
+				$.ajax({
+					url:"workbench/activity/save.do",
+					data : {
+						"owner":$.trim($("#create-marketActivityOwner").val()),
+						"name":$.trim($("#create-marketActivityName").val()),
+						"startDate":$.trim($("#create-startTime").val()),
+						"endDate":$.trim($("#create--endTime").val()),
+						"cost":$.trim($("#create-cost").val()),
+						"description":$.trim($("#create-describe").val()),
+					},
+					type : "post",//增删改查，登录密码传输，传输方式用post
+					dataType : "json",
+					success : function (data) {
+
+						/*
+						data
+							{"success":true/false}
+						 */
+						if(data.success){
+							//添加成功后
+							//刷新市场活动信息列表（局部刷新）
+
+							//关闭添加操作的模态窗口
+							$("#createActivityModal").modal("hide");
+
+						}else{
+							alert("添加市场活动失败");
+						}
+
+					}
+				})
 			})
 
 		})
@@ -115,11 +165,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 						<div class="form-group">
 							<label for="create-startTime" class="col-sm-2 control-label">开始日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="create-startTime">
+								<input type="text" class="form-control time" id="create-startTime">
 							</div>
 							<label for="create-endTime" class="col-sm-2 control-label">结束日期</label>
 							<div class="col-sm-10" style="width: 300px;">
-								<input type="text" class="form-control" id="create-endTime">
+								<input type="text" class="form-control time" id="create-endTime">
 							</div>
 						</div>
                         <div class="form-group">
@@ -140,8 +190,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 					
 				</div>
 				<div class="modal-footer">
+					<!--
+						data-dismiss="modal"
+							表示关闭模态窗口
+
+					-->
 					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">保存</button>
+					<button type="button" class="btn btn-primary" id = "saveBtn">保存</button>
 				</div>
 			</div>
 		</div>
